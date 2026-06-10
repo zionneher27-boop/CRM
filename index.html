@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="93media CRM"/>
+<meta name="theme-color" content="#000"/>
+<title>93 Dynamic Media CRM</title>
+<link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon.jpeg.jpg"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="icon.jpeg.jpg"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;}
+input,select,textarea{font-size:16px;font-family:inherit;outline:none;}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;}
+a{color:inherit;text-decoration:none;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:#333;border-radius:3px;}
+
+/* ── APP SHELL ── */
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+#header{background:#000;border-bottom:1px solid #1a1a1a;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.logo{display:flex;flex-direction:column;line-height:1;}
+.logo-93{font-size:15px;font-weight:900;color:#fff;}
+.logo-dynamic{font-size:6px;font-weight:800;color:#E91E8C;letter-spacing:2px;text-transform:uppercase;}
+.logo-media{font-size:13px;font-weight:900;color:#fff;text-transform:uppercase;}
+.header-stats{display:flex;gap:14px;font-size:12px;color:#555;}
+.header-stats span b{font-weight:800;}
+
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+#bottom-nav{display:flex;background:#0a0a0a;border-top:1px solid #1a1a1a;flex-shrink:0;}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 10px;cursor:pointer;color:#555;font-size:9.5px;font-weight:700;letter-spacing:0.3px;position:relative;transition:color .15s;}
+.bn-item.active{color:#E91E8C;}
+.bn-icon{font-size:20px;line-height:1;}
+.bn-badge{position:absolute;top:4px;right:calc(50% - 14px);background:#E91E8C;color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:8px;}
+
+/* ── PAGES ── */
+.page{display:none;padding:12px;}
+.page.active{display:block;}
+
+/* ── FILTERS ── */
+.filters{display:flex;gap:7px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;}
+.filters::-webkit-scrollbar{display:none;}
+.fi{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:8px 10px;font-size:13px;color:#ccc;white-space:nowrap;min-width:0;flex-shrink:0;}
+.fi option{background:#111;}
+.search-fi{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:8px 12px;font-size:13px;color:#fff;min-width:160px;flex:1;}
+.search-fi::placeholder{color:#444;}
+
+/* ── LEAD CARDS ── */
+.lead-card{background:#0d0d0d;border:1px solid #1e1e1e;border-radius:13px;padding:14px;margin-bottom:10px;}
+.lc-top{display:flex;align-items:flex-start;gap:11px;margin-bottom:10px;}
+.lc-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;}
+.lc-name{font-size:15px;font-weight:800;color:#fff;line-height:1.2;}
+.lc-cat{font-size:11px;color:#555;margin-top:2px;}
+.lc-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10.5px;font-weight:700;margin-top:4px;}
+.lc-info{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.lc-row{display:flex;gap:8px;align-items:flex-start;font-size:13px;}
+.lc-lbl{font-size:10px;color:#444;font-weight:700;text-transform:uppercase;letter-spacing:.4px;min-width:65px;margin-top:1px;}
+.lc-val{color:#ccc;flex:1;}
+.call-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(233,30,140,.12);border:2px solid #E91E8C;border-radius:10px;padding:12px;color:#E91E8C;font-size:15px;font-weight:800;width:100%;margin-bottom:6px;text-decoration:none;}
+.mobile-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:10px;color:#888;font-size:13px;font-weight:600;width:100%;margin-bottom:6px;text-decoration:none;}
+.lc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #1a1a1a;margin-top:4px;}
+.lc-actions{display:flex;gap:8px;}
+.action-btn{padding:7px;border-radius:7px;color:#555;background:#111;border:1px solid #222;display:flex;align-items:center;justify-content:center;font-size:13px;}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 0 6px;}
+.page-btn{background:#111;border:1px solid #2a2a2a;color:#ccc;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;}
+.page-btn:disabled{opacity:.3;cursor:default;}
+.page-info{font-size:12px;color:#555;}
+
+/* ── CALL PANEL (fullscreen on mobile) ── */
+#call-panel{position:fixed;inset:0;background:#000;z-index:200;display:none;flex-direction:column;}
+#call-panel.open{display:flex;}
+.cp-hdr{padding:14px 16px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;background:#0a0a0a;}
+.cp-hdr-title{font-size:14px;font-weight:800;color:#fff;}
+.cp-close{font-size:22px;color:#555;padding:4px 8px;}
+.cp-body{flex:1;overflow-y:auto;padding:16px;}
+.cp-name{font-size:20px;font-weight:900;color:#E91E8C;margin-bottom:2px;}
+.cp-sub{font-size:12px;color:#555;margin-bottom:16px;}
+.cp-field{margin-bottom:12px;}
+.cp-field-lbl{font-size:9.5px;font-weight:800;color:#444;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;}
+.cp-field-val{font-size:14px;color:#ddd;}
+.cp-divider{height:1px;background:#1a1a1a;margin:14px 0;}
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.status-btn{padding:10px 8px;border-radius:9px;font-size:12px;font-weight:700;border:2px solid #222;color:#555;background:transparent;transition:all .15s;text-align:center;}
+.status-btn.selected{border-color:var(--c);color:var(--c);background:var(--bg);}
+.cp-notes-lbl{font-size:9.5px;font-weight:800;color:#444;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.cp-notes textarea{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:9px;padding:10px 12px;font-size:14px;color:#fff;min-height:90px;resize:none;display:block;}
+.cp-notes textarea:focus{border-color:#E91E8C;}
+.cp-nav{padding:12px 16px;border-top:1px solid #1a1a1a;display:flex;gap:8px;background:#0a0a0a;}
+.cp-nav-btn{flex:1;padding:12px;border-radius:9px;font-size:14px;font-weight:800;text-align:center;}
+.cp-save{background:#E91E8C;color:#fff;}
+.cp-next{background:#1a1a1a;color:#ccc;border:1px solid #2a2a2a;}
+.cp-prev{background:#111;color:#666;border:1px solid #1a1a1a;flex:0 0 auto;padding:12px 16px;}
+
+/* ── DASHBOARD ── */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.kpi{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;padding:14px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:#E91E8C;}
+.kpi-lbl{font-size:9px;color:#444;font-weight:800;text-transform:uppercase;letter-spacing:.5px;}
+.kpi-val{font-size:26px;font-weight:900;color:#fff;margin:5px 0 2px;letter-spacing:-1px;}
+.kpi-sub{font-size:11px;color:#444;}
+.kpi-5{grid-column:1/-1;}
+.section-card{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;margin-bottom:12px;}
+.section-hdr{padding:11px 14px;border-bottom:1px solid #1a1a1a;font-size:13px;font-weight:700;color:#fff;}
+.section-body{padding:12px 14px;}
+.prog-row{margin-bottom:10px;}
+.prog-top{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;}
+.prog-label{color:#888;}
+.prog-val{font-weight:700;}
+.prog-bar{height:4px;background:#111;border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:2px;transition:width .5s;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="logo">
+      <span class="logo-93">93</span>
+      <span class="logo-dynamic">DYNAMIC</span>
+      <span class="logo-media">MEDIA</span>
+    </div>
+    <div class="header-stats">
+      <span>📞 <b id="h-kontaktiert" style="color:#fff">0</b></span>
+      <span>📅 <b id="h-termine" style="color:#E91E8C">0</b></span>
+      <span>⏳ <b id="h-offen" style="color:#fff">0</b></span>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- DASHBOARD PAGE -->
+    <div id="page-dashboard" class="page">
+      <div class="kpi-grid" id="kpi-grid"></div>
+      <div class="section-card">
+        <div class="section-hdr">📊 Anruf-Status</div>
+        <div class="section-body" id="status-chart"></div>
+      </div>
+    </div>
+
+    <!-- ANGERUFEN PAGE -->
+    <div id="page-angerufen" class="page">
+      <div style="padding:4px 0 14px">
+        <div style="font-size:11px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Angerufen – kehren nach 24h zurück</div>
+        <div id="angerufen-list"></div>
+        <div id="angerufen-empty" style="text-align:center;padding:50px;color:#333;font-size:14px;display:none">Noch keine Anrufe heute</div>
+      </div>
+    </div>
+
+    <!-- LEADS PAGE -->
+    <div id="page-leads" class="page active">
+      <div class="filters">
+        <input class="search-fi" type="search" placeholder="🔍 Name, Telefon, Ort..." id="search-input" oninput="filterLeads()"/>
+        <select class="fi" id="filter-status" onchange="filterLeads()">
+          <option value="">Alle Status</option>
+          <option value="nicht_kontaktiert">Nicht kontaktiert</option>
+          <option value="angerufen">Angerufen</option>
+          <option value="gf_nicht_erreicht">GF nicht erreicht</option>
+          <option value="nicht_erreicht">Nicht erreicht</option>
+          <option value="kein_bedarf">Kein Bedarf</option>
+          <option value="termin">Termin/Interesse</option>
+        </select>
+        <select class="fi" id="filter-city" onchange="filterLeads()">
+          <option value="">Alle Städte</option>
+          <option value="Frankfurt am Main">Frankfurt</option>
+          <option value="Offenbach">Offenbach</option>
+        </select>
+      </div>
+      <div id="leads-list"></div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div id="bottom-nav">
+    <div class="bn-item active" onclick="showPage('dashboard')" id="bn-dashboard">
+      <span class="bn-icon">📊</span>
+      <span>Dashboard</span>
+    </div>
+    <div class="bn-item" onclick="showPage('leads')" id="bn-leads">
+      <span class="bn-icon">🍽️</span>
+      <span>Gastro Leads</span>
+      <span class="bn-badge" id="bn-badge" style="display:none"></span>
+    </div>
+    <div class="bn-item" onclick="showPage('angerufen')" id="bn-angerufen">
+      <div class="mbn-icon-wrap" style="position:relative;display:inline-block;">
+        <span class="bn-icon">📞</span>
+        <span class="bn-badge" id="bn-badge-angerufen" style="display:none"></span>
+      </div>
+      <span>Angerufen</span>
+    </div>
+    <div class="bn-item" style="cursor:default;">
+      <div style="width:30px;height:30px;border-radius:50%;background:#E91E8C;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;margin:0 auto 2px;">NN</div>
+      <span>N. Neher</span>
+    </div>
+  </div>
+</div>
+
+<!-- CALL PANEL -->
+<div id="call-panel">
+  <div class="cp-hdr">
+    <span class="cp-hdr-title">📞 Anruf-Modus</span>
+    <button class="cp-close" onclick="closeCallPanel()">✕</button>
+  </div>
+  <div class="cp-body">
+    <div class="cp-name" id="cp-name"></div>
+    <div class="cp-sub" id="cp-sub"></div>
+    <div class="cp-field">
+      <div class="cp-field-lbl">Ansprechpartner</div>
+      <div class="cp-field-val" id="cp-contact"></div>
+    </div>
+    <div class="cp-field" id="cp-phone-field"></div>
+    <div class="cp-field">
+      <div class="cp-field-lbl">Adresse</div>
+      <div class="cp-field-val" id="cp-address"></div>
+    </div>
+    <div class="cp-field" id="cp-website-field"></div>
+    <div class="cp-divider"></div>
+    <div style="font-size:10px;font-weight:800;color:#444;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Status nach dem Anruf</div>
+    <div class="status-grid" id="status-grid"></div>
+    <div class="cp-divider"></div>
+    <div class="cp-notes-lbl">Notizen</div>
+    <div class="cp-notes">
+      <textarea id="cp-notes-input" placeholder="Gesprächsnotizen, nächste Schritte..."></textarea>
+    </div>
+  </div>
+  <div class="cp-nav">
+    <button class="cp-nav-btn cp-prev" onclick="prevLead()">←</button>
+    <button class="cp-nav-btn cp-save" onclick="saveAndClose()">💾 Speichern</button>
+    <button class="cp-nav-btn cp-next" onclick="saveAndNext()">Weiter →</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const LEADS_RAW = [{"id":"r001","name":"Café Hauptwache","street":"An der Hauptwache 15","plz":"60313","city":"Frankfurt am Main","district":"Innenstadt","category":"Café / Restaurant","contact":"T. Göktepe","role":"Geschäftsführer","phone":"069 21998627","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r002","name":"CRESCO","street":"Berliner Str. 51","plz":"60311","city":"Frankfurt am Main","district":"Innenstadt","category":"Restaurant / Bar","contact":"Eva Scharafin","role":"Geschäftsführerin","phone":"069 92881655","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r003","name":"Frankfurter Botschaft","street":"Westhafenplatz 6-8","plz":"60327","city":"Frankfurt am Main","district":"Europaviertel","category":"Restaurant","contact":"Daniel Arons","role":"Geschäftsführer","phone":"069 583035664","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r004","name":"Asiapalast Offenbach","street":"Christian-Pleß-Str. 18-20","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Restaurant","contact":"Tianzhu Zhang","role":"Geschäftsführer","phone":"069 84843811","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r005","name":"Chez Marie","street":"Taunusanlage 9-10","plz":"60329","city":"Frankfurt am Main","district":"Innenstadt","category":"Restaurant / Café / Bar","contact":"Christiaan Fresen","role":"Geschäftsführer","phone":"069 153296200","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"Weitere GF: Alexander Breuckelmann, Peter Schmidt","lastContact":"","createdAt":"2026-06-10"},{"id":"r006","name":"Pirosmani","street":"Friedberger Anlage 1-3","plz":"60314","city":"Frankfurt am Main","district":"Nordend","category":"Restaurant","contact":"Gulnara Isaev","role":"Geschäftsführerin","phone":"0176 63037531","mobile":"0176 63037531","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r007","name":"Tafelspitz & Söhne","street":"Bert-Brecht-Str. 4","plz":"63069","city":"Offenbach","district":"Offenbach","category":"Restaurant","contact":"Daniel Rühl","role":"Vertreten durch","phone":"069 80085640","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Vertreten durch + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r008","name":"Diva Bar","street":"Alfred-Pfaff-Str. 1","plz":"60389","city":"Frankfurt am Main","district":"Bornheim","category":"Restaurant / Bar / Eventlocation","contact":"Tihomir Mamic","role":"Geschäftsführer","phone":"069 420970880","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r009","name":"Accente Gastronomie Service","street":"Ludwig-Erhard-Anlage 1","plz":"60327","city":"Frankfurt am Main","district":"Europaviertel","category":"Gastronomie / Catering","contact":"Oliver Schell","role":"Geschäftsführer","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF aus Impressum","notes":"Weitere GF: Holger Schuster. Tel. nicht verifiziert.","lastContact":"","createdAt":"2026-06-10"},{"id":"r010","name":"Morleos Offenbach","street":"Wilhelmsplatz 14","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Restaurant / Bar","contact":"Dennis Andreas Albrecht","role":"Vertretungsberechtigt","phone":"069 80089689","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Vertretungsberechtigt + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r011","name":"Caféhaus Siesmayer","street":"Palmengartenstr. 11","plz":"60325","city":"Frankfurt am Main","district":"Westend","category":"Café / Restaurant","contact":"Robert Mangold","role":"Geschäftsführer","phone":"069 90029200","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r012","name":"Restaurant Sorriso","street":"Oppenheimer Landstr. 49","plz":"60596","city":"Frankfurt am Main","district":"Sachsenhausen","category":"Restaurant","contact":"Robert Bezjak","role":"Geschäftsführer","phone":"069 66408861","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r013","name":"Poseidon Offenbach","street":"Bieberer Str. 263","plz":"63071","city":"Offenbach","district":"Offenbach","category":"Restaurant","contact":"Efthymios Iakovis","role":"Inhaber","phone":"069 857582","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Inhaber + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r014","name":"Restaurant Mojito","street":"Seligenstädter Str. 34","plz":"63073","city":"Offenbach","district":"Offenbach","category":"Restaurant / Bar","contact":"Pashalis Alexiou","role":"Inhaber","phone":"069 89994522","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Inhaber + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r015","name":"Oceans Restaurant Bar & Lounge","street":"Bockenheimer Landstr. 87","plz":"60325","city":"Frankfurt am Main","district":"Bockenheim","category":"Restaurant / Bar / Lounge","contact":"Sedat Durmaz","role":"Inhaber","phone":"069 87206182","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Inhaber + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r016","name":"Restaurant Blumen","street":"Rotlintstr. 60","plz":"60316","city":"Frankfurt am Main","district":"Nordend","category":"Restaurant","contact":"Michael Mayer","role":"Geschäftsführer","phone":"069 49086510","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r017","name":"Heimathafen Offenbach","street":"Hafenplatz 4","plz":"63067","city":"Offenbach","district":"Offenbach","category":"Restaurant","contact":"Wasilis Kourtoglou","role":"Geschäftsführer","phone":"069 80109449","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"Weitere GF: Phong Luu","lastContact":"","createdAt":"2026-06-10"},{"id":"r018","name":"Sabor Restaurant & Sky Bar","street":"Frankfurt am Main","plz":"","city":"Frankfurt am Main","district":"Innenstadt","category":"Restaurant / Sky Bar","contact":"Jorge Luis Salazar Lopez","role":"Geschäftsführer","phone":"069 200912519","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"Weitere GF: Sridevan Sriskandarajah","lastContact":"","createdAt":"2026-06-10"},{"id":"r019","name":"Fleischeslust Offenbach","street":"Wilhelmsplatz 6","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Restaurant / Steakhouse","contact":"Karmel Boughriba","role":"Vertreten durch","phone":"069 80085644","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Vertreten durch + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r020","name":"MainNizza","street":"Untermainkai 17","plz":"60329","city":"Frankfurt am Main","district":"Sachsenhausen","category":"Restaurant","contact":"Hartmut Schranz","role":"Geschäftsführer","phone":"069 26952922","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"GF + Tel. aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r021","name":"Im Herzen Afrikas","street":"Gutleutstr. 13","plz":"60329","city":"Frankfurt am Main","district":"Bahnhofsviertel","category":"Restaurant","contact":"n.v.","role":"","phone":"069 24246080","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"Ansprechpartner noch zu ermitteln","lastContact":"","createdAt":"2026-06-10"},{"id":"r022","name":"Main Tower Restaurant","street":"Neue Mainzer Str. 52-58","plz":"60311","city":"Frankfurt am Main","district":"Innenstadt","category":"Restaurant","contact":"n.v.","role":"","phone":"069 36504777","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r023","name":"Sushiko","street":"Schweizer Str. 6","plz":"60594","city":"Frankfurt am Main","district":"Sachsenhausen","category":"Restaurant","contact":"n.v.","role":"","phone":"069 60605460","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r024","name":"Zum Gemalten Haus","street":"Schweizer Str. 67","plz":"60594","city":"Frankfurt am Main","district":"Sachsenhausen","category":"Apfelweinwirtschaft","contact":"n.v.","role":"","phone":"069 614559","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r025","name":"Maxie Eisen","street":"Münchener Str. 18","plz":"60329","city":"Frankfurt am Main","district":"Bahnhofsviertel","category":"Restaurant / Bar","contact":"n.v.","role":"","phone":"069 76758362","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r026","name":"Pasta e Panini","street":"Adalbertstr. 44-48","plz":"60486","city":"Frankfurt am Main","district":"Bockenheim","category":"Restaurant","contact":"n.v.","role":"","phone":"069 24144448","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r027","name":"Restaurant Lafleur","street":"Palmengartenstr. 11","plz":"60325","city":"Frankfurt am Main","district":"Westend","category":"Restaurant","contact":"Robert Mangold","role":"Geschäftsführer","phone":"069 90029100","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. Branchenquelle; GF aus Impressum","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r028","name":"Lohrberg-Schänke","street":"Auf dem Lohr 9","plz":"60389","city":"Frankfurt am Main","district":"Bornheim","category":"Restaurant / Biergarten","contact":"n.v.","role":"","phone":"069 90476785","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r029","name":"Frankfurter Küche","street":"Hanauer Landstr. 86","plz":"60314","city":"Frankfurt am Main","district":"Ostend","category":"Restaurant","contact":"n.v.","role":"","phone":"069 43056878","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r030","name":"bidlabu","street":"Kleine Bockenheimer Str. 14","plz":"60313","city":"Frankfurt am Main","district":"Innenstadt","category":"Restaurant","contact":"n.v.","role":"","phone":"069 95648784","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r031","name":"Heimat Restaurant","street":"Berliner Str. 70","plz":"60311","city":"Frankfurt am Main","district":"Innenstadt","category":"Restaurant","contact":"n.v.","role":"","phone":"069 29725994","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r032","name":"Stanley Diamond","street":"Ottostr. 16-18","plz":"60329","city":"Frankfurt am Main","district":"Bahnhofsviertel","category":"Restaurant / Bar","contact":"n.v.","role":"","phone":"069 26942892","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r033","name":"Restaurant Lohninger","street":"Schweizer Str. 1","plz":"60594","city":"Frankfurt am Main","district":"Sachsenhausen","category":"Restaurant","contact":"n.v.","role":"","phone":"069 247557860","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r034","name":"Erno's Bistro","street":"Liebigstr. 15","plz":"60323","city":"Frankfurt am Main","district":"Westend","category":"Restaurant","contact":"n.v.","role":"","phone":"069 721997","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r035","name":"Restaurant Gustav","street":"Reuterweg 57","plz":"60323","city":"Frankfurt am Main","district":"Westend","category":"Restaurant","contact":"n.v.","role":"","phone":"069 74745252","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r036","name":"Français","street":"Am Kaiserplatz","plz":"60311","city":"Frankfurt am Main","district":"Innenstadt","category":"Restaurant","contact":"n.v.","role":"","phone":"069 215118","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r037","name":"Frankfurtersalon","street":"Braubachstr. 32","plz":"60311","city":"Frankfurt am Main","district":"Altstadt","category":"Restaurant / Salon","contact":"n.v.","role":"","phone":"069 247577757","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r038","name":"Café Laumer","street":"Bockenheimer Landstr. 67","plz":"60325","city":"Frankfurt am Main","district":"Bockenheim","category":"Café","contact":"n.v.","role":"","phone":"069 727912","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r039","name":"Cafe Kante","street":"Kantstr. 13","plz":"60316","city":"Frankfurt am Main","district":"Nordend","category":"Café","contact":"n.v.","role":"","phone":"069 4990083","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r040","name":"Café Karin","street":"Großer Hirschgraben 28","plz":"60311","city":"Frankfurt am Main","district":"Altstadt","category":"Café","contact":"n.v.","role":"","phone":"069 295217","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r041","name":"Cafe Moloko","street":"Kurt-Schumacher-Str. 1","plz":"60311","city":"Frankfurt am Main","district":"Innenstadt","category":"Café / Bar","contact":"n.v.","role":"","phone":"069 13886932","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r042","name":"Rösterei Wissmüller","street":"Leipziger Str. 39","plz":"60487","city":"Frankfurt am Main","district":"Bockenheim","category":"Café / Rösterei","contact":"n.v.","role":"","phone":"069 771881","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r043","name":"Wacker's Kaffee","street":"Kornmarkt 9","plz":"60311","city":"Frankfurt am Main","district":"Altstadt","category":"Café / Rösterei","contact":"n.v.","role":"","phone":"069 287810","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r044","name":"Cafe Größenwahn","street":"Lenaustr. 97","plz":"60318","city":"Frankfurt am Main","district":"Nordend","category":"Café / Restaurant","contact":"n.v.","role":"","phone":"069 599356","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r045","name":"Bitter & Zart","street":"Braubachstr. 14","plz":"60311","city":"Frankfurt am Main","district":"Altstadt","category":"Café / Chocolaterie","contact":"n.v.","role":"","phone":"069 94942846","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r046","name":"Catering's Best","street":"Wilhelm-Leuschner-Str. 43","plz":"60329","city":"Frankfurt am Main","district":"Bahnhofsviertel","category":"Catering","contact":"n.v.","role":"","phone":"069 26052442","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r047","name":"FPS Catering","street":"Ferdinand-Porsche-Str. 17-19","plz":"60386","city":"Frankfurt am Main","district":"Ostend","category":"Catering","contact":"n.v.","role":"","phone":"069 67830570","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r048","name":"Herkert Catering","street":"Hansteinstr. 9","plz":"60318","city":"Frankfurt am Main","district":"Nordend","category":"Catering","contact":"n.v.","role":"","phone":"069 2692330","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r049","name":"kleine Anna","street":"Mainzer Landstr. 111","plz":"60329","city":"Frankfurt am Main","district":"Gallus","category":"Catering / Bistro","contact":"n.v.","role":"","phone":"069 45094894","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r050","name":"Kofler & Kompanie","street":"Hanauer Landstr. 181-185","plz":"60314","city":"Frankfurt am Main","district":"Ostend","category":"Catering / Events","contact":"n.v.","role":"","phone":"069 9435080","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Branchen-/Webquelle","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r051","name":"Cafe Bar Europa","street":"Großer Biergrund 4","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Café / Bar","contact":"n.v.","role":"","phone":"069 80101115","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r052","name":"Cafe Bar San Carlo","street":"Bieberer Str. 26","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Café","contact":"n.v.","role":"","phone":"069 97761767","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r053","name":"Café Bar Trés Jolie","street":"Geleitsstr. 44","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Café / Bar","contact":"n.v.","role":"","phone":"069 22220857","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r054","name":"Cafe Egntia","street":"Große Marktstr. 8-10","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Café","contact":"Georgios Lazaridis","role":"Inhaber","phone":"069 82377201","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r055","name":"Cafe Creme","street":"Konrad-Adenauer-Str. 1","plz":"63073","city":"Offenbach","district":"Offenbach-Bieber","category":"Café","contact":"Oliver Coppi","role":"Inhaber","phone":"069 89990700","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r056","name":"Sienna - Brunch & More","street":"Berliner Str. 175","plz":"63067","city":"Offenbach","district":"Offenbach","category":"Café / Brunch","contact":"n.v.","role":"","phone":"0157 83314278","mobile":"0157 83314278","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r057","name":"L'AFRIQUE Cafe Bistrocafe","street":"Bieberer Str. 1-7","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Bistro / Café","contact":"n.v.","role":"","phone":"069 85701111","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r058","name":"ATHENA cafe bakery deli","street":"Kleiner Biergrund 17","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Café / Bakery","contact":"Spyridon Paraskevas","role":"Inhaber","phone":"0152 21534063","mobile":"0152 21534063","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r059","name":"Internet Café","street":"Starkenburgring 81","plz":"63069","city":"Offenbach","district":"Offenbach","category":"Internet Café","contact":"n.v.","role":"","phone":"069 86005063","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r060","name":"Mojo Cafe Bar","street":"Frankfurter Str. 71","plz":"63067","city":"Offenbach","district":"Offenbach","category":"Café / Bar","contact":"n.v.","role":"","phone":"0152 21534063","mobile":"0152 21534063","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r061","name":"Chichilas Tex Mex","street":"Kaiserstr. 4","plz":"63065","city":"Offenbach","district":"Offenbach","category":"Restaurant","contact":"Nuri Mohsen & Karimi Rohullah","role":"Inhaber GbR","phone":"069 96244407","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Örtliche","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r062","name":"La Luna Offenbach","street":"Hafenplatz 1","plz":"63067","city":"Offenbach","district":"Offenbach","category":"Eiscafé","contact":"n.v.","role":"","phone":"069 82378500","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Tel. aus Das Telefonbuch","notes":"","lastContact":"","createdAt":"2026-06-10"},{"id":"r063","name":"Adulis","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r064","name":"Ariston","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r065","name":"Atschel","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r066","name":"Apfelwein Wagner","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r067","name":"Dauth-Schneider","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r068","name":"Lorsbacher Thal","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r069","name":"Fichtekränzi","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r070","name":"Daheim im Lorsbacher Thal","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r071","name":"Maincafé","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r072","name":"Oosten","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r073","name":"Gerbermühle","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r074","name":"Oma Rinkes","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r075","name":"Margarete","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r076","name":"Seven Swans","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r077","name":"Emma Metzler","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r078","name":"Holbein's","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r079","name":"Villa Merton","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r080","name":"Muku","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r081","name":"Iwase","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r082","name":"Matsuri","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r083","name":"Ramen Jun","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r084","name":"Moriki","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r085","name":"Kabuki","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r086","name":"Zenzakan","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r087","name":"Aroydee","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r088","name":"Pak Choi","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r089","name":"eatDOORI Kaiserstrasse","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r090","name":"eatDOORI Oeder Weg","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r091","name":"Delhi Tandoori","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r092","name":"Bombay Palace","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r093","name":"Saravanaa Bhavan","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r094","name":"Vevay","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r095","name":"Elaine's Deli","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r096","name":"Elaine's Restaurant","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r097","name":"Sunny Side Up","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r098","name":"The Holy Cross Brewing Society","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r099","name":"Hoppenworth & Ploch","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r100","name":"Bunca Barista","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r101","name":"Brühmarkt","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r102","name":"Bohnerie Café","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r103","name":"Kaffeemacherei","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r104","name":"Cafe Sugar Mama","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r105","name":"Café Wacker Opernplatz","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r106","name":"Manufactum Brot & Butter","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r107","name":"Kleinmarkthalle Bistro","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r108","name":"Metzgerei Schreiber","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r109","name":"Best Worscht in Town","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r110","name":"Der Fette Bulle","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r111","name":"Heroes Premium Burgers","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r112","name":"Jamys Burger","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r113","name":"What's Beef","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r114","name":"Bun Bo","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r115","name":"Pho Ha Noi","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r116","name":"Vipho","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r117","name":"Senckenbergs","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r118","name":"Block House Börsenplatz","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r119","name":"Chicago Meatpackers","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r120","name":"Buffalo Steakhaus","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r121","name":"M-Steakhouse Frankfurt","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r122","name":"Fleischeslust Frankfurt","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r123","name":"The Legacy Bar & Grill","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r124","name":"Lili's Burger","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r125","name":"BonVivant","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r126","name":"Café Maingold","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r127","name":"Mampf Jazzlokal","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r128","name":"Jazzkeller Frankfurt","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r129","name":"Embury Bar","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r130","name":"Hunky Dory Bar","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r131","name":"Logenhaus","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r132","name":"Naiv","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r133","name":"Yok Yok","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r134","name":"Gleis 25","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r135","name":"Pracht Bar","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r136","name":"Helium","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r137","name":"Sullivan","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r138","name":"Good Times For Good People","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r139","name":"Old Fashioned Bar","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r140","name":"Walden","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r141","name":"22nd Lounge","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r142","name":"Gibson Club","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r143","name":"Tanzhaus West","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r144","name":"Batschkapp","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r145","name":"Zoom Frankfurt","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r146","name":"Orange Peel","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r147","name":"Ponyhof","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r148","name":"Das Bett","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r149","name":"Café Koz","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r150","name":"Dreikönigskeller","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r151","name":"El Pacifico","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r152","name":"La Mex Lounge","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r153","name":"Joe Peña's","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r154","name":"Buena Vista","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r155","name":"Central Grill","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r156","name":"Medici","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r157","name":"Vinum","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r158","name":"Quattro","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r159","name":"Charlot","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r160","name":"Ristorante Sardegna","street":"","plz":"","city":"Frankfurt am Main","district":"Frankfurt","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r161","name":"Restaurant Leonardo","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r162","name":"Försters","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r163","name":"Brasserie Beau d'Eau","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r164","name":"Barrio Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r165","name":"Le Belge","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r166","name":"Markthaus am Wilhelmsplatz","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r167","name":"MAMAN Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r168","name":"Traffic Bar","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r169","name":"Bootshaus Bürgel","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r170","name":"Soupreme Kitchen","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r171","name":"OFOF Cafebar","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r172","name":"Restaurant East Side","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r173","name":"Anatolia Restaurant","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r174","name":"Kanouhou","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r175","name":"Nagoya Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r176","name":"Ristorante Bella Vita","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r177","name":"Restaurant Asiapalast","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r178","name":"Steakhaus Fleischeslust","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r179","name":"Morleos","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r180","name":"Tafelspitz & Söhne","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r181","name":"Heimathafen","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r182","name":"Mojito Bieber","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r183","name":"Poseidon Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r184","name":"Pizzeria Fantasia","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r185","name":"Die Zwei Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r186","name":"Sushi Palace Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r187","name":"Pizzeria Da Jassi","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r188","name":"Eiscafe Cortina","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r189","name":"Eiscafe Da Claudio","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r190","name":"Wiener Hof Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r191","name":"Bierbrunnen Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r192","name":"Pizzeria Europa","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r193","name":"Restaurant Delphi Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r194","name":"Elia Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r195","name":"King Döner Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r196","name":"City Döner Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r197","name":"Haus der Stadtwache","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r198","name":"Fisch Franke Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r199","name":"Café Frieda Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"},{"id":"r200","name":"Café Luise Offenbach","street":"","plz":"","city":"Offenbach am Main","district":"Offenbach","category":"Gastronomie","contact":"n.v.","role":"","phone":"","mobile":"","email":"","website":"","status":"lead","callStatus":"nicht_kontaktiert","source":"Leadname bekannt; Telefon/GF noch zu verifizieren","notes":"Telefon & Ansprechpartner noch zu recherchieren","lastContact":"","createdAt":"2026-06-10"}];
+
+const CALL_STATUSES = [
+  {id:"nicht_kontaktiert", label:"Nicht kontaktiert", color:"#555",    bg:"rgba(100,100,100,.15)"},
+  {id:"angerufen",         label:"Angerufen",         color:"#3B82F6", bg:"rgba(59,130,246,.15)"},
+  {id:"gf_nicht_erreicht", label:"GF nicht erreicht", color:"#F59E0B", bg:"rgba(245,158,11,.15)"},
+  {id:"nicht_erreicht",    label:"Nicht erreicht",    color:"#8B5CF6", bg:"rgba(139,92,246,.15)"},
+  {id:"kein_bedarf",       label:"Kein Bedarf",       color:"#EF4444", bg:"rgba(239,68,68,.15)"},
+  {id:"termin",            label:"Termin / Interesse", color:"#E91E8C", bg:"rgba(233,30,140,.12)"},
+];
+
+const COLORS = ["#E91E8C","#C4186F","#ff4da6","#b5158a","#e0559a","#ff69b4","#c71585","#db1083"];
+const initials = n => n.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
+const avatarColor = n => COLORS[n.charCodeAt(0) % COLORS.length];
+
+// ── STATE ─────────────────────────────────────────────
+let leads = LEADS_RAW.map(l => ({...l}));
+let filteredLeads = [...leads];
+let currentPage = 0;
+const PER_PAGE = 20;
+let callIdx = null;
+let cpStatus = "";
+let cpNotes = "";
+
+// ── UTILS ─────────────────────────────────────────────
+function getStatus(id) { return CALL_STATUSES.find(s=>s.id===id) || CALL_STATUSES[0]; }
+function save() { try { localStorage.setItem('crm_leads', JSON.stringify(leads)); } catch(e){} }
+function load() { try { const d=localStorage.getItem('crm_leads'); if(d) leads=JSON.parse(d); } catch(e){} }
+
+// ── NAV ───────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const bnEl = document.getElementById('bn-'+name);
+  if(bnEl) bnEl.classList.add('active');
+  if(name==='dashboard') renderDashboard();
+  if(name==='leads') renderLeads();
+  if(name==='angerufen') renderAngerufen();
+}
+
+// ── FILTER & RENDER LEADS ─────────────────────────────
+function isInAngerufenList(l) {
+  // termin and kein_bedarf stay in angerufen permanently (never return)
+  if(!l.inAngerufenList) return false;
+  if(l.callStatus === 'termin' || l.callStatus === 'kein_bedarf') return true;
+  // Others: in angerufen for 24h, then return
+  if(!l.calledAt) return false;
+  const diff = Date.now() - new Date(l.calledAt).getTime();
+  return diff < 24 * 60 * 60 * 1000; // less than 24h
+}
+
+function checkReturn24h() {
+  let changed = false;
+  leads.forEach(l => {
+    if(l.inAngerufenList && l.callStatus !== 'termin' && l.callStatus !== 'kein_bedarf') {
+      if(l.calledAt) {
+        const diff = Date.now() - new Date(l.calledAt).getTime();
+        if(diff >= 24 * 60 * 60 * 1000) {
+          // Return to main list
+          l.inAngerufenList = false;
+          l.callStatus = 'nicht_kontaktiert';
+          changed = true;
+        }
+      }
+    }
+  });
+  if(changed) { save(); updateHeader(); }
+}
+
+function filterLeads() {
+  checkReturn24h();
+  const q = (document.getElementById('search-input').value||'').toLowerCase();
+  const st = document.getElementById('filter-status').value;
+  const city = document.getElementById('filter-city').value;
+  filteredLeads = leads.filter(l => {
+    if(isInAngerufenList(l)) return false; // hide from main list
+    const mq = !q || l.name.toLowerCase().includes(q) || (l.phone&&l.phone.includes(q)) || (l.contact&&l.contact.toLowerCase().includes(q)) || (l.district&&l.district.toLowerCase().includes(q));
+    const ms = !st || l.callStatus === st;
+    const mc = !city || l.city.includes(city);
+    return mq && ms && mc;
+  });
+  currentPage = 0;
+  renderLeads();
+}
+
+function renderLeads() {
+  const total = filteredLeads.length;
+  const pages = Math.ceil(total / PER_PAGE);
+  const slice = filteredLeads.slice(currentPage * PER_PAGE, (currentPage+1) * PER_PAGE);
+  const list = document.getElementById('leads-list');
+
+  if(slice.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:50px;color:#333;font-size:14px;">Keine Leads gefunden</div>';
+  } else {
+    list.innerHTML = slice.map((l, i) => {
+      const cs = getStatus(l.callStatus);
+      const av = avatarColor(l.name);
+      const realIdx = currentPage * PER_PAGE + i;
+      const hasPhone = l.phone && l.phone !== '';
+      const hasContact = l.contact && l.contact !== 'n.v.' && l.contact !== '';
+      return `
+        <div class="lead-card">
+          <div class="lc-top">
+            <div class="lc-av" style="background:${av}">${initials(l.name)}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="lc-name">${l.name}</div>
+              <div class="lc-cat">${l.category}${l.district?' · '+l.district:''}</div>
+              <span class="lc-badge" style="background:${cs.bg};color:${cs.color}">${cs.label}</span>
+            </div>
+          </div>
+          <div class="lc-info">
+            ${hasContact ? `<div class="lc-row"><span class="lc-lbl">👤 Kontakt</span><span class="lc-val" style="color:#fff;font-weight:700">${l.contact}${l.role?' <span style="color:#555;font-weight:400;font-size:11px">· '+l.role+'</span>':''}</span></div>` : ''}
+            ${l.street ? `<div class="lc-row"><span class="lc-lbl">📍 Ort</span><span class="lc-val">${l.street}${l.plz?' , '+l.plz:''}</span></div>` : ''}
+            ${l.notes ? `<div class="lc-row"><span class="lc-lbl">📝 Notiz</span><span class="lc-val" style="color:#E91E8C;font-size:12px">${l.notes}</span></div>` : ''}
+          </div>
+          ${hasPhone
+            ? `<a href="tel:${l.phone.replace(/\s/g,'')}" class="call-btn" onclick="openCallPanel(${realIdx})">
+                <span style="font-size:20px">📞</span> ${l.phone}
+               </a>`
+            : `<button class="call-btn" style="opacity:.35;cursor:default">Keine Nummer hinterlegt</button>`
+          }
+          ${l.mobile ? `<a href="tel:${l.mobile.replace(/\s/g,'')}" class="mobile-btn"><span>📱</span> ${l.mobile}</a>` : ''}
+          <div class="lc-footer">
+            ${l.website ? `<a href="https://${l.website}" target="_blank" style="font-size:11px;color:#E91E8C">${l.website}</a>` : '<span></span>'}
+            <button class="action-btn" style="color:#E91E8C;border-color:#E91E8C" onclick="openCallPanel(${realIdx})">✏️ Status</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Pagination
+  const pag = document.getElementById('pagination');
+  if(pages <= 1) { pag.innerHTML=''; return; }
+  pag.innerHTML = `
+    <button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===0?'disabled':''}>← Zurück</button>
+    <span class="page-info">Seite ${currentPage+1} / ${pages} (${total})</span>
+    <button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=pages-1?'disabled':''}>Weiter →</button>`;
+
+  updateHeader();
+}
+
+function goPage(p) { currentPage = p; renderLeads(); document.getElementById('content').scrollTo(0,0); }
+
+// ── CALL PANEL ────────────────────────────────────────
+function openCallPanel(idx) {
+  callIdx = idx;
+  const l = filteredLeads[idx];
+  cpStatus = l.callStatus || 'nicht_kontaktiert';
+  cpNotes = l.notes || '';
+  renderCallPanel(l);
+  document.getElementById('call-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderCallPanel(l) {
+  document.getElementById('cp-name').textContent = l.name;
+  document.getElementById('cp-sub').textContent = (l.category||'') + (l.district?' · '+l.district:'') + (l.city?' · '+l.city:'');
+  document.getElementById('cp-contact').innerHTML = l.contact && l.contact !== 'n.v.'
+    ? `<strong style="color:#fff">${l.contact}</strong>${l.role?' <span style="color:#555;font-size:12px">· '+l.role+'</span>':''}` : '<span style="color:#444">Nicht bekannt</span>';
+  document.getElementById('cp-address').textContent = [l.street, l.plz, l.city].filter(Boolean).join(', ') || '—';
+
+  const phoneField = document.getElementById('cp-phone-field');
+  if(l.phone) {
+    phoneField.innerHTML = `<div class="cp-field-lbl">Telefon</div>
+      <a href="tel:${l.phone.replace(/\s/g,'')}" style="display:flex;align-items:center;gap:10px;background:rgba(233,30,140,.1);border:2px solid #E91E8C;border-radius:10px;padding:12px;color:#E91E8C;font-size:16px;font-weight:800;text-decoration:none;margin-top:4px;">
+        📞 ${l.phone}
+      </a>
+      ${l.mobile ? `<a href="tel:${l.mobile.replace(/\s/g,'')}" style="display:flex;align-items:center;gap:8px;background:#111;border:1px solid #2a2a2a;border-radius:9px;padding:10px;color:#888;font-size:14px;font-weight:600;text-decoration:none;margin-top:6px;">📱 ${l.mobile}</a>` : ''}`;
+  } else {
+    phoneField.innerHTML = '<div class="cp-field-lbl">Telefon</div><div style="color:#444;font-size:13px;padding:8px 0">Nicht hinterlegt – bitte recherchieren</div>';
+  }
+
+  const webField = document.getElementById('cp-website-field');
+  webField.innerHTML = l.website
+    ? `<div class="cp-field-lbl">Website</div><a href="https://${l.website}" target="_blank" style="color:#E91E8C;font-size:13px">${l.website}</a>` : '';
+
+  // Status grid
+  const grid = document.getElementById('status-grid');
+  grid.innerHTML = CALL_STATUSES.map(s => `
+    <button class="status-btn ${cpStatus===s.id?'selected':''}"
+      style="--c:${s.color};--bg:${s.bg};${cpStatus===s.id?'border-color:'+s.color+';color:'+s.color+';background:'+s.bg:''}"
+      onclick="selectStatus('${s.id}')">${s.label}</button>`).join('');
+
+  document.getElementById('cp-notes-input').value = cpNotes;
+}
+
+function selectStatus(id) {
+  cpStatus = id;
+  const l = filteredLeads[callIdx];
+  const grid = document.getElementById('status-grid');
+  grid.innerHTML = CALL_STATUSES.map(s => `
+    <button class="status-btn ${cpStatus===s.id?'selected':''}"
+      style="--c:${s.color};--bg:${s.bg};${cpStatus===s.id?'border-color:'+s.color+';color:'+s.color+';background:'+s.bg:''}"
+      onclick="selectStatus('${s.id}')">${s.label}</button>`).join('');
+}
+
+function saveCurrentCall() {
+  if(callIdx === null) return;
+  const l = filteredLeads[callIdx];
+  cpNotes = document.getElementById('cp-notes-input').value;
+  const masterIdx = leads.findIndex(x => x.id === l.id);
+  if(masterIdx !== -1) {
+    const now = new Date().toISOString();
+    leads[masterIdx].callStatus = cpStatus;
+    leads[masterIdx].notes = cpNotes;
+    leads[masterIdx].lastContact = now;
+    // If status is anything except nicht_kontaktiert → move to Angerufen list
+    // Status "termin" and "kein_bedarf" stay permanently, others return after 24h
+    if(cpStatus !== 'nicht_kontaktiert') {
+      leads[masterIdx].calledAt = now;
+      leads[masterIdx].inAngerufenList = true;
+    }
+    filteredLeads[callIdx] = {...leads[masterIdx]};
+  }
+  save();
+  updateHeader();
+  checkReturn24h();
+}
+
+function saveAndClose() {
+  saveCurrentCall();
+  closeCallPanel();
+  renderLeads();
+}
+
+function saveAndNext() {
+  saveCurrentCall();
+  cpNotes = ''; // clear notes for next lead
+  if(callIdx < filteredLeads.length - 1) {
+    callIdx++;
+    const l = filteredLeads[callIdx];
+    cpStatus = l.callStatus || 'nicht_kontaktiert';
+    cpNotes = l.notes || '';
+    renderCallPanel(l);
+  } else {
+    closeCallPanel();
+    renderLeads();
+  }
+}
+
+function prevLead() {
+  saveCurrentCall();
+  cpNotes = '';
+  if(callIdx > 0) {
+    callIdx--;
+    const l = filteredLeads[callIdx];
+    cpStatus = l.callStatus || 'nicht_kontaktiert';
+    cpNotes = l.notes || '';
+    renderCallPanel(l);
+  }
+}
+
+function closeCallPanel() {
+  document.getElementById('call-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── DASHBOARD ─────────────────────────────────────────
+function renderDashboard() {
+  const total = leads.length;
+  const kontaktiert = leads.filter(l=>l.callStatus!=='nicht_kontaktiert').length;
+  const termine = leads.filter(l=>l.callStatus==='termin').length;
+  const keinBedarf = leads.filter(l=>l.callStatus==='kein_bedarf').length;
+  const nichtErreicht = leads.filter(l=>l.callStatus==='nicht_erreicht').length;
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi"><div class="kpi-lbl">Leads gesamt</div><div class="kpi-val">${total}</div><div class="kpi-sub">Frankfurt & Offenbach</div></div>
+    <div class="kpi"><div class="kpi-lbl">Kontaktiert</div><div class="kpi-val">${kontaktiert}</div><div class="kpi-sub">${Math.round(kontaktiert/total*100)}% der Liste</div></div>
+    <div class="kpi"><div class="kpi-lbl">Termine</div><div class="kpi-val" style="color:#E91E8C">${termine}</div><div class="kpi-sub">Mit Interesse</div></div>
+    <div class="kpi"><div class="kpi-lbl">Kein Bedarf</div><div class="kpi-val" style="color:#EF4444">${keinBedarf}</div><div class="kpi-sub">Abgehakt</div></div>
+    <div class="kpi kpi-5"><div class="kpi-lbl">Nicht erreicht</div><div class="kpi-val">${nichtErreicht}</div><div class="kpi-sub">Nochmal anrufen</div></div>`;
+
+  const chart = document.getElementById('status-chart');
+  chart.innerHTML = CALL_STATUSES.map(s => {
+    const count = leads.filter(l=>l.callStatus===s.id).length;
+    const pct = total>0 ? Math.round(count/total*100) : 0;
+    return `<div class="prog-row">
+      <div class="prog-top"><span class="prog-label">${s.label}</span><span class="prog-val" style="color:${s.color}">${count}</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${s.color}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ── HEADER ────────────────────────────────────────────
+function updateHeader() {
+  const kontaktiert = leads.filter(l=>l.callStatus!=='nicht_kontaktiert').length;
+  const termine = leads.filter(l=>l.callStatus==='termin').length;
+  const offen = leads.filter(l=>!isInAngerufenList(l) && l.callStatus==='nicht_kontaktiert').length;
+  const angerufenCount = leads.filter(l=>isInAngerufenList(l)).length;
+  document.getElementById('h-kontaktiert').textContent = kontaktiert;
+  document.getElementById('h-termine').textContent = termine;
+  document.getElementById('h-offen').textContent = offen;
+  const badge = document.getElementById('bn-badge');
+  if(offen > 0) { badge.textContent = offen; badge.style.display = 'block'; }
+  else { badge.style.display = 'none'; }
+  const badgeA = document.getElementById('bn-badge-angerufen');
+  if(badgeA) {
+    if(angerufenCount > 0) { badgeA.textContent = angerufenCount; badgeA.style.display = 'block'; }
+    else { badgeA.style.display = 'none'; }
+  }
+}
+
+function timeLeft(calledAt) {
+  if(!calledAt) return '';
+  const diff = 24*60*60*1000 - (Date.now() - new Date(calledAt).getTime());
+  if(diff <= 0) return 'Kehrt zurück...';
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  return `Zurück in ${h}h ${m}m`;
+}
+
+function renderAngerufen() {
+  const list = leads.filter(l => isInAngerufenList(l));
+  const container = document.getElementById('angerufen-list');
+  const empty = document.getElementById('angerufen-empty');
+
+  if(list.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  // Group by status
+  const groups = {
+    termin:           { label:'🏆 Termin / Interesse', color:'#E91E8C', items:[] },
+    angerufen:        { label:'📞 Angerufen',           color:'#3B82F6', items:[] },
+    gf_nicht_erreicht:{ label:'⚠️ GF nicht erreicht',  color:'#F59E0B', items:[] },
+    nicht_erreicht:   { label:'📵 Nicht erreicht',      color:'#8B5CF6', items:[] },
+    kein_bedarf:      { label:'❌ Kein Bedarf',          color:'#EF4444', items:[] },
+  };
+
+  list.forEach(l => {
+    const g = groups[l.callStatus];
+    if(g) g.items.push(l);
+    else groups.angerufen.items.push(l);
+  });
+
+  let html = '';
+  Object.values(groups).forEach(g => {
+    if(g.items.length === 0) return;
+    html += `<div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:800;color:${g.color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding:6px 10px;background:${g.color}18;border-radius:7px;border-left:3px solid ${g.color}">
+        ${g.label} <span style="float:right;color:#555">${g.items.length}</span>
+      </div>`;
+    g.items.forEach(l => {
+      const av = l.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const isPermanent = l.callStatus === 'termin' || l.callStatus === 'kein_bedarf';
+      const tl = isPermanent ? (l.callStatus === 'termin' ? '🏆 Dauerhaft' : '❌ Dauerhaft') : timeLeft(l.calledAt);
+      const calledDate = l.calledAt ? new Date(l.calledAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+      html += `
+      <div style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:11px;padding:12px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#E91E8C;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">${av}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:#fff">${l.name}</div>
+            <div style="font-size:11px;color:#555">${l.category||''}${l.district?' · '+l.district:''}</div>
+          </div>
+          <div style="font-size:10px;color:#555;text-align:right">${tl}<br><span style="font-size:9px">${calledDate}</span></div>
+        </div>
+        ${l.contact && l.contact!=='n.v.' ? `<div style="font-size:12px;color:#888;margin-bottom:6px">👤 <strong style="color:#ccc">${l.contact}</strong> · ${l.role||''}</div>` : ''}
+        ${l.notes ? `<div style="font-size:12px;color:#E91E8C;background:rgba(233,30,140,.08);padding:7px 10px;border-radius:7px;margin-bottom:6px">📝 ${l.notes}</div>` : ''}
+        ${l.phone ? `<a href="tel:${l.phone.replace(/\s/g,'')}" style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(233,30,140,.1);border:1.5px solid #E91E8C;border-radius:9px;padding:10px;color:#E91E8C;font-size:14px;font-weight:800;text-decoration:none;margin-top:4px;">📞 ${l.phone}</a>` : ''}
+        ${!isPermanent ? `<div style="font-size:10px;color:#333;text-align:center;margin-top:6px">Kehrt automatisch nach 24h zurück</div>` : ''}
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+// ── INIT ──────────────────────────────────────────────
+load();
+checkReturn24h();
+filterLeads();
+updateHeader();
+// Check every minute for 24h returns
+setInterval(() => { checkReturn24h(); filterLeads(); updateHeader(); }, 60000);
+</script>
+</body>
+</html>
