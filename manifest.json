@@ -1,0 +1,23 @@
+{
+  "name": "93 Dynamic Media CRM",
+  "short_name": "93media CRM",
+  "description": "Gastro Leads Frankfurt & Offenbach",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#E91E8C",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
