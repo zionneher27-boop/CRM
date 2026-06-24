@@ -386,7 +386,6 @@ table.dt{width:100%;border-collapse:collapse;min-width:580px;}
     <div class="si" onclick="go('funnel')" id="n-funnel"><span class="si-ic">📈</span>Funnel & Qualität</div>
     <div class="si" onclick="go('produkte')" id="n-produkte"><span class="si-ic">📦</span>Produkte</div>
     <div class="si" onclick="go('meetings')" id="n-meetings"><span class="si-ic">🗓️</span>Meetings</div>
-    <div class="si" onclick="go('strategien')" id="n-strategien"><span class="si-ic">🧠</span>Strategien</div>
   </div>
   <div class="sb-div"></div>
   <div class="sb-sec">
@@ -593,15 +592,6 @@ table.dt{width:100%;border-collapse:collapse;min-width:580px;}
       <div class="ptitle">📁 Unterlagen</div>
       <div class="fbar"><button class="btn btn-p btn-sm" onclick="openUModal()">+ Unterlage</button></div>
       <div id="u-list"></div>
-    </div>
-
-    <!-- STRATEGIEN -->
-    <div class="page" id="p-strategien">
-      <div class="ptitle">🧠 Strategien</div>
-      <div class="fbar">
-        <button class="btn btn-p btn-sm" onclick="openStrategieModal()">+ Strategie</button>
-      </div>
-      <div id="strat-list"></div>
     </div>
 
     <!-- FUNNEL -->
@@ -1071,7 +1061,7 @@ function go(p){
   ({dashboard:renderDash,leads:renderLeads,angerufen:renderAng,kontakte:renderKontakte,pipeline:renderPipeline,
     followups:renderFU,angebote:renderAngebote,rechnungen:renderRechnungen,vertraege:renderVertraege,
     projekte:renderProjekte,creatives:renderCreatives,unterlagen:renderUnterlagen,funnel:renderFunnel,
-    produkte:renderProdukte,meetings:renderMeetings,strategien:renderStrategien})[p]?.();
+    produkte:renderProdukte,meetings:renderMeetings})[p]?.();
 }
 function toggleSB(){document.getElementById('sb').classList.toggle('open');document.getElementById('sb-ov').classList.toggle('vis');}
 function closeSB(){document.getElementById('sb').classList.remove('open');document.getElementById('sb-ov').classList.remove('vis');}
@@ -1840,39 +1830,6 @@ function connectSB(){
   document.getElementById('sync-lbl').textContent='● Gespeichert';
   document.getElementById('sdot').classList.add('on');
   dismissSetup();alert('✓ Zugangsdaten gespeichert! Vollständiger Supabase-Sync wird im nächsten Update aktiviert.');
-}
-/* ── STRATEGIEN ── */
-function renderStrategien(){
-  const el=document.getElementById('strat-list');if(!el)return;
-  if(!DB.strategien||!DB.strategien.length){el.innerHTML='<div style="color:var(--t4);font-size:13px;padding:20px 0">Noch keine Strategien vorhanden.</div>';return;}
-  el.innerHTML=DB.strategien.map(s=>`
-    <div class="card" style="margin-bottom:10px;padding:15px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
-        <div style="flex:1">
-          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px">${s.titel}</div>
-          ${s.beschreibung?`<div style="font-size:13px;color:var(--t3);margin-bottom:8px;line-height:1.5">${s.beschreibung}</div>`:''}
-          ${s.ziel?`<div style="font-size:11px;color:var(--pink);font-weight:700">🎯 Ziel: ${s.ziel}</div>`:''}
-        </div>
-        <button class="btn btn-d btn-xs" onclick="delStrategie('${s.id}')">✕</button>
-      </div>
-    </div>`).join('');
-}
-function openStrategieModal(){
-  showM('Neue Strategie',`
-    <div class="fg"><label class="fl">Titel *</label><input class="fi" id="m-stit" placeholder="z.B. Instagram Outreach"/></div>
-    <div class="fg"><label class="fl">Beschreibung</label><textarea class="fi" id="m-sbesc" placeholder="Was ist die Strategie?"></textarea></div>
-    <div class="fg"><label class="fl">Ziel</label><input class="fi" id="m-sziel" placeholder="z.B. 10 Neukunden pro Monat"/></div>`,
-  ()=>{
-    const t=document.getElementById('m-stit').value.trim();if(!t)return;
-    if(!DB.strategien)DB.strategien=[];
-    DB.strategien.push({id:uid(),titel:t,beschreibung:document.getElementById('m-sbesc').value,ziel:document.getElementById('m-sziel').value,createdAt:new Date().toISOString().slice(0,10)});
-    saveDB();renderStrategien();closeM();
-  });
-}
-function delStrategie(id){
-  if(!confirm('Strategie löschen?'))return;
-  DB.strategien=DB.strategien.filter(s=>s.id!==id);
-  saveDB();renderStrategien();
 }
 function saveSBSettings(){
   const u=document.getElementById('st-url').value.trim(),k=document.getElementById('st-key').value.trim();
